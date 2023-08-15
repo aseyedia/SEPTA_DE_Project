@@ -1,4 +1,4 @@
-# http://www3.septa.org/#/Static%20Data/Locations
+# http://www3.septa.org/
 import requests
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
