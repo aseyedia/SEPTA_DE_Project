@@ -1,0 +1,6 @@
+
+.idea/
+
+db/septa_data.db
+
+*.db
