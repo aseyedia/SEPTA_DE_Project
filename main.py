@@ -1,11 +1,11 @@
 from flask import Flask, render_template, jsonify, request
-import pprint as pprint
+from pprint import pprint
 import requests
 
 app = Flask(__name__)
 
 SEPTA_LOCATIONS_ENDPOINT = "http://www3.septa.org/api/locations/get_locations.php"
-SEPTA_SCHEDULES_ENDPOINT = "https://www3.septa.org/api/BusSchedules/index.php"
+SEPTA_SCHEDULE_ENDPOINT = "https://www3.septa.org/api/BusSchedules/index.php"
 SEPTA_TRANSITVIEW_ENDPOINT = "https://www3.septa.org/api/TransitView/index.php"
 
 
@@ -14,32 +14,41 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/get_nearby_transit', methods=['GET'])
-def get_nearby_transit():
-    # lat = request.args.get('lat')
-    lat = "39.951689"
-    # lon = request.args.get('lon')
-    lon = "-75.171225"
-    # radius = request.args.get('radius', default=0.1)
-    radius = "0.1"
+# lat = "39.951689"
+# lon = "-75.171225"
+
+@app.route('/get_transit_info', methods=['GET'])
+def get_transit_info():
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+
     # Fetch nearby stops
-    response = requests.get(SEPTA_LOCATIONS_ENDPOINT,
-                            params={"lon": lon, "lat": lat, "type": "bus_stops", "radius": radius})
-    stops = response.json()
+    stops_response = requests.get(SEPTA_LOCATIONS_ENDPOINT, params={"lon": lon, "lat": lat, "type": "bus_stops"})
+    stops = stops_response.json()
 
-    transit_data = []
-
-    # Fetch transit data for each stop
+    route_ids = []
     for stop in stops:
-        stop_id = stop['location_id']
-        response = requests.get(SEPTA_SCHEDULES_ENDPOINT, params={"stop_id": stop_id})
+        # Fetch schedule for each stop
+        schedule_response = requests.get(SEPTA_SCHEDULE_ENDPOINT, params={"stop_id": stop['location_id']})
+        schedule = schedule_response.json()
 
-        # so I can get nearby stops, and then use those stop ids to get the bus/trolley schedules for those stops,
-        # and using those schedules I can get route numbers, but I can also highlight the routes on the map
-        data = response.json()
-        transit_data.append(data)
+        for entry in schedule:
+            route_ids.append(entry['Route'])
 
-    return jsonify(transit_data)
+    route_ids = list(set(route_ids))  # Remove duplicates
+
+    vehicles_data = []
+    for route_id in route_ids:
+        # Fetch real-time vehicle locations for each route
+        transit_response = requests.get(SEPTA_TRANSITVIEW_ENDPOINT, params={"route": route_id})
+        vehicles = transit_response.json()
+        vehicles_data.extend(vehicles)
+
+    # You can then return this data to be displayed on the frontend.
+    return jsonify({
+        "stops": stops,
+        "vehicles": vehicles_data
+    })
 
 
 if __name__ == '__main__':
