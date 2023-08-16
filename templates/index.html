@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEPTA Nearby Transit</title>
+</head>
+<body>
+
+<h2>Nearby SEPTA Transit</h2>
+<button onclick="fetchTransitData()">Get Nearby Transit Data</button>
+<pre id="output"></pre>
+
+<script>
+    function fetchTransitData() {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+
+            let response = await fetch(`/get_nearby_transit?lat=${lat}&lon=${lon}`);
+            let data = await response.json();
+
+            // Display the data (For now, we're just showing raw JSON for simplicity)
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        });
+    }
+</script>
+
+</body>
+</html>
