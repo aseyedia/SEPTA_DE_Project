@@ -31,11 +31,7 @@ def get_transit_info():
         # Fetch schedule for each stop
         schedule_response = requests.get(SEPTA_SCHEDULE_ENDPOINT, params={"stop_id": stop['location_id']})
         schedule = schedule_response.json()
-
-        for entry in schedule:
-            route_ids.append(entry['Route'])
-
-    route_ids = list(set(route_ids))  # Remove duplicates
+        route_ids = list(schedule.keys())
 
     vehicles_data = []
     for route_id in route_ids:
