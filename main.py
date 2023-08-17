@@ -1,8 +1,10 @@
 from flask import Flask, render_template, jsonify, request
 from pprint import pprint
 import requests
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 SEPTA_LOCATIONS_ENDPOINT = "http://www3.septa.org/api/locations/get_locations.php"
 SEPTA_SCHEDULE_ENDPOINT = "https://www3.septa.org/api/BusSchedules/index.php"
